@@ -2,14 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_to_text_provider.dart';
+import 'package:speech_to_text_iot_screen/providers/auth_provider.dart';
+import 'package:speech_to_text_iot_screen/providers/lectures_provider.dart';
+import 'package:speech_to_text_iot_screen/repositories/lectures_repository.dart';
+import 'package:speech_to_text_iot_screen/ui/authentication/login_screen.dart';
+import 'package:speech_to_text_iot_screen/ui/home/home_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/home/record_screen.dart';
 
-void main() {
-  runApp(const ProviderDemoApp());
+void main()async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final authProvider = AuthProvider();
+  await authProvider.loadUser();
+  runApp(MyApp(authProvider: authProvider,));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final AuthProvider authProvider;
+  const MyApp({super.key,required this.authProvider});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -38,12 +48,43 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider<SpeechToTextProvider>.value(
             value: speechProvider,
           ),
+          ChangeNotifierProvider(create: (_) => widget.authProvider),
+          ChangeNotifierProvider(create: (_) => LectureProvider(
+              repository: LectureRepository(),
+              authProvider: widget.authProvider)..fetchLectures()),
         ],
         child: MaterialApp(
-          home: Scaffold(
-            body: const SpeechProviderExampleWidget(),
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            colorScheme: const ColorScheme.light(
+              primary: Colors.blue,
+              secondary: Colors.blueAccent,
+              surface: Colors.white,
+              onSecondary: Colors.black54,
+            ),
           ),
+          debugShowCheckedModeBanner: false,
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const AuthWrapper(),
+            '/home': (context) => const HomeScreen(),
+            '/login': (context) => const LoginScreen(),
+            '/record': (context) => const RecordScreen(),
+            // '/record': (context) => const (),
+          },
         ),
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        return auth.isAuthenticated ? const HomeScreen() : const LoginScreen();
+      },
     );
   }
 }
