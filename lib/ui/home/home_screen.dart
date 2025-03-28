@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../model/lecture.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/lectures_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,6 +15,249 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    final lectureProvider = Provider.of<LectureProvider>(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Lectures'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<AuthProvider>(context, listen: false).logout();
+            },
+          )
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Navigator.pushNamed(context, '/record');
+          showCreateLectureDialog(context);
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Create New Lecture'),
+      ),
+      body: ListView.builder(
+          itemCount: lectureProvider.lectures.length,
+          itemBuilder: (context, index) {
+            final lecture = lectureProvider.lectures[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 4, // Adds a shadow effect
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                title: Text(
+                  lecture.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: Text(lecture.description),
+                trailing: PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'update') {
+                      showUpdateDialog(context, lecture);
+                    } else if (value == 'delete') {
+                      showDeleteConfirmationDialog(context, lecture.id);
+                    } else if (value == 'add_student') {
+                      // Call add student function
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'update',
+                      child: ListTile(
+                        leading: Icon(Icons.edit, color: Colors.blue),
+                        title: Text('Update'),
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: ListTile(
+                        leading: Icon(Icons.delete, color: Colors.red),
+                        title: Text('Delete'),
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'add_student',
+                      child: ListTile(
+                        leading: Icon(Icons.person_add, color: Colors.green),
+                        title: Text('Add Student'),
+                      ),
+                    ),
+                  ],
+                  icon: const Icon(Icons.more_vert), // Three dots menu
+                ),
+              ),
+            )
+            ;
+          }
+      )
+    );
   }
+
+  void showUpdateDialog(BuildContext context, Lecture lecture) {
+    final TextEditingController titleController = TextEditingController(text: lecture.title);
+    final TextEditingController contentController = TextEditingController(text: lecture.content);
+    final TextEditingController descriptionController = TextEditingController(text: lecture.description);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Update Lecture"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: "Title"),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: "Content"),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(labelText: "Description"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Close dialog
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                String newTitle = titleController.text.trim();
+                String newContent = contentController.text.trim();
+                String newDescription = descriptionController.text.trim();
+
+                if (newTitle.isNotEmpty && newContent.isNotEmpty && newDescription.isNotEmpty) {
+                  bool updated = await context.read<LectureProvider>().updateLecture(
+                    lecture.id,
+                    newTitle,
+                    newContent,
+                    newDescription,
+                  );
+
+                  if (updated) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Lecture updated successfully")),
+                    );
+                    Navigator.pop(context); // Close dialog after updating
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Failed to update lecture")),
+                    );
+                  }
+                }
+              },
+              child: const Text("Update"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showDeleteConfirmationDialog(BuildContext context, String lectureId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Confirm Deletion"),
+          content: const Text("Are you sure you want to delete this lecture?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Cancel
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                bool deleted = await context.read<LectureProvider>().deleteLecture(lectureId);
+
+                if (deleted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Lecture deleted successfully")),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Failed to delete lecture")),
+                  );
+                }
+
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showCreateLectureDialog(BuildContext context) {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+    final TextEditingController contentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Create New Lecture"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: "Title"),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(labelText: "Description"),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: "Content"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Cancel
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final lectureProvider = context.read<LectureProvider>();
+                bool created = await lectureProvider.createLecture(
+                  title: titleController.text,
+                  description: descriptionController.text,
+                  content: contentController.text,
+                );
+
+                if (created) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Lecture created successfully")),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Failed to create lecture")),
+                  );
+                }
+
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text("Create"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
 }
