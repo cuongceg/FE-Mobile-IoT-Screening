@@ -1,58 +1,17 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_to_text_provider.dart';
 import '../widget/recognition_result.dart';
-class ProviderDemoApp extends StatefulWidget {
-  const ProviderDemoApp({super.key});
+
+class RecordScreen extends StatefulWidget {
+  const RecordScreen({super.key});
 
   @override
-  State<ProviderDemoApp> createState() => _ProviderDemoAppState();
+  RecordScreenState createState() =>
+      RecordScreenState();
 }
 
-class _ProviderDemoAppState extends State<ProviderDemoApp> {
-  final SpeechToText speech = SpeechToText();
-  late SpeechToTextProvider speechProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    speechProvider = SpeechToTextProvider(speech);
-    initSpeechState();
-  }
-
-  Future<void> initSpeechState() async {
-    await speechProvider.initialize();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SpeechToTextProvider>.value(
-      value: speechProvider,
-      child: MaterialApp(
-        home: Scaffold(
-          appBar: AppBar(
-            title: const Text('Speech to Text Provider Example'),
-          ),
-          body: const SpeechProviderExampleWidget(),
-        ),
-      ),
-    );
-  }
-}
-
-class SpeechProviderExampleWidget extends StatefulWidget {
-  const SpeechProviderExampleWidget({super.key});
-
-  @override
-  SpeechProviderExampleWidgetState createState() =>
-      SpeechProviderExampleWidgetState();
-}
-
-class SpeechProviderExampleWidgetState
-    extends State<SpeechProviderExampleWidget> {
+class RecordScreenState extends State<RecordScreen> {
   String _currentLocaleId = '';
 
   void _setCurrentLocale(SpeechToTextProvider speechProvider) {
@@ -64,20 +23,22 @@ class SpeechProviderExampleWidgetState
   @override
   Widget build(BuildContext context) {
     var speechProvider = Provider.of<SpeechToTextProvider>(context);
-    if (speechProvider.isNotAvailable) {
-      return const Center(
-        child: Text(
-            'Speech recognition not available, no permission or not available on the device.'),
-      );
-    }
-    _setCurrentLocale(speechProvider);
-    return Column(children: [
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Record Screen'),
+      ),
+      body: (speechProvider.isNotAvailable)?
       const Center(
         child: Text(
-          'Speech recognition available',
-          style: TextStyle(fontSize: 22.0),
-        ),
-      ),
+            'Speech recognition not available, no permission or not available on the device.'),
+      ):
+      _buildBody(context, speechProvider),
+    );
+  }
+
+  Widget _buildBody(BuildContext context,SpeechToTextProvider speechProvider) {
+    _setCurrentLocale(speechProvider);
+    return Column(children: [
       Column(
         children: <Widget>[
           Row(
