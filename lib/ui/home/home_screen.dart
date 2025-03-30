@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text_iot_screen/ui/home/class_selection_screen.dart';
 
 import '../../model/lecture.dart';
 import '../../providers/auth_provider.dart';
@@ -60,7 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else if (value == 'delete') {
                       showDeleteConfirmationDialog(context, lecture.id);
                     } else if (value == 'add_student') {
-                      // Call add student function
+                      Navigator.push(context,MaterialPageRoute(builder: (context)=>
+                      ClassSelectionScreen(lectureId: lecture.id, currentIsPublicTo: lecture.isPublicTo)));
                     }
                   },
                   itemBuilder: (context) => [
