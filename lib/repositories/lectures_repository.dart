@@ -49,11 +49,11 @@ class LectureRepository {
       if (response.statusCode == 200) {
         return true; // Successfully updated
       } else {
-        print("Failed to update lecture: ${response.body}");
+        //print("Failed to update lecture: ${response.body}");
         return false;
       }
     } catch (e) {
-      print("Error updating lecture: $e");
+      //print("Error updating lecture: $e");
       return false;
     }
   }
@@ -76,7 +76,7 @@ class LectureRepository {
         return false;
       }
     } catch (e) {
-      print("Error deleting lecture: $e");
+      //print("Error deleting lecture: $e");
       return false;
     }
   }
@@ -104,7 +104,7 @@ class LectureRepository {
           "isPublicTo": [],
         }),
       );
-      print("RESPONSE: ${response.body}");
+      //print("RESPONSE: ${response.body}");
       if (response.statusCode == 201) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         return Lecture.fromJson(responseData["lecture"]);
@@ -112,9 +112,31 @@ class LectureRepository {
         throw Exception("Failed to create lecture");
       }
     } catch (e) {
-      print("Error creating lecture: $e");
+      throw Exception("Error creating lecture: $e");
     }
-    return null;
   }
 
+  Future<Lecture?> addStudentToLecture({required String accessToken,required List<String> studentIds,required String lectureId})async{
+    try{
+      final response = await http.put(
+        Uri.parse(addStudentToLectureURL(lectureId)),
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "studentIds":studentIds
+        }),
+      );
+      
+      if(response.statusCode == 200){
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return Lecture.fromJson(responseData["updatedLecture"]);
+      }else{
+        throw Exception("Failed to add student to lecture");
+      }
+    }catch(e){
+      throw Exception("Error adding student to lecture: $e");
+    }
+  }
 }

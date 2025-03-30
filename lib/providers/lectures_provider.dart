@@ -105,7 +105,30 @@ class LectureProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     }
+    return false;
+  }
 
+  Future<bool> addStudentToLecture({
+    required String lectureId,
+    required List<String> studentIds})async{
+    final accessToken = authProvider.accessToken;
+    if (accessToken == null) return false;
+
+    final Lecture? lecture = await repository.addStudentToLecture(
+      lectureId: lectureId,
+      studentIds: studentIds,
+      accessToken: accessToken,
+    );
+
+    if (lecture != null) {
+      int index = _lectures.indexWhere((lecture) => lecture.id == lectureId);
+      if (index != -1) {
+        _lectures[index].isPublicTo.clear();
+        _lectures[index].isPublicTo.addAll(lecture.isPublicTo);
+        notifyListeners();
+      }
+      return true;
+    }
     return false;
   }
 }
