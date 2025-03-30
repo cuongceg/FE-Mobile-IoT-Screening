@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_to_text_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/auth_provider.dart';
+import 'package:speech_to_text_iot_screen/providers/classes_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/lectures_provider.dart';
 import 'package:speech_to_text_iot_screen/repositories/lectures_repository.dart';
 import 'package:speech_to_text_iot_screen/ui/authentication/login_screen.dart';
@@ -29,11 +30,13 @@ class _MyAppState extends State<MyApp> {
 
   final SpeechToText speech = SpeechToText();
   late SpeechToTextProvider speechProvider;
+  late ClassesProvider classesProvider;
 
   @override
   void initState() {
     super.initState();
     speechProvider = SpeechToTextProvider(speech);
+    classesProvider = ClassesProvider();
     initSpeechState();
   }
 
@@ -48,6 +51,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider<SpeechToTextProvider>.value(
             value: speechProvider,
           ),
+          ChangeNotifierProvider(create: (_)=> classesProvider),
           ChangeNotifierProvider(create: (_) => widget.authProvider),
           ChangeNotifierProvider(create: (_) => LectureProvider(
               repository: LectureRepository(),
