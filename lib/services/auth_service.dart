@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:speech_to_text_iot_screen/model/classes.dart';
 import '../network/api_urls.dart';
 
 class AuthService{
@@ -80,5 +81,21 @@ class AuthService{
 
   Future<void> logout() async {
     await deleteToken();
+  }
+
+  Future<List<Classes>?> getAllClasses()async{
+    try{
+      final response = await http.get(Uri.parse(getClassURL),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if(response.statusCode == 200){
+        final data = jsonDecode(response.body);
+        return List<Classes>.from(data["data"].map((item) => Classes.fromJson(item)));
+      }else{
+        throw Exception("Failed to get classes");
+      }
+    }catch(e){
+      throw Exception("Failed to get classes");
+    }
   }
 }
