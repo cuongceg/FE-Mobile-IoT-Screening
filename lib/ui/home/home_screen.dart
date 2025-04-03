@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:speech_to_text_iot_screen/core/decorations/button_decorations.dart';
 import 'package:speech_to_text_iot_screen/ui/home/class_selection_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/home/content_screen.dart';
+import 'package:speech_to_text_iot_screen/ui/home/create_content_screen.dart';
 
 import '../../model/lecture.dart';
 import '../../providers/auth_provider.dart';
@@ -39,63 +40,71 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Create New Lecture'),
       ),
-      body: ListView.builder(
-          itemCount: lectureProvider.lectures.length,
-          itemBuilder: (context, index) {
-            final lecture = lectureProvider.lectures[index];
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 4, // Adds a shadow effect
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                title: Text(
-                  lecture.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await lectureProvider.fetchLectures();
+        },
+        child: ListView.builder(
+            itemCount: lectureProvider.lectures.length,
+            itemBuilder: (context, index) {
+              final lecture = lectureProvider.lectures[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                subtitle: Text(lecture.description),
-                trailing: PopupMenuButton<String>(
-                  onSelected: (value) {
-                    if (value == 'update') {
-                      showUpdateDialog(context, lecture);
-                    } else if (value == 'delete') {
-                      showDeleteConfirmationDialog(context, lecture.id);
-                    } else if (value == 'add_student') {
-                      Navigator.push(context,MaterialPageRoute(builder: (context)=>
-                      ClassSelectionScreen(lectureId: lecture.id, currentIsPublicTo: lecture.isPublicTo)));
-                    }
+                elevation: 4, // Adds a shadow effect
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  title: Text(
+                    lecture.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>ContentScreen(lectureId: lecture.id)));
                   },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'update',
-                      child: ListTile(
-                        leading: Icon(Icons.edit, color: Colors.blue),
-                        title: Text('Update'),
+                  subtitle: Text(lecture.description),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'update') {
+                        showUpdateDialog(context, lecture);
+                      } else if (value == 'delete') {
+                        showDeleteConfirmationDialog(context, lecture.id);
+                      } else if (value == 'add_student') {
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>
+                        ClassSelectionScreen(lectureId: lecture.id, currentIsPublicTo: lecture.isPublicTo)));
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'update',
+                        child: ListTile(
+                          leading: Icon(Icons.edit, color: Colors.blue),
+                          title: Text('Update'),
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: ListTile(
-                        leading: Icon(Icons.delete, color: Colors.red),
-                        title: Text('Delete'),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: ListTile(
+                          leading: Icon(Icons.delete, color: Colors.red),
+                          title: Text('Delete'),
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'add_student',
-                      child: ListTile(
-                        leading: Icon(Icons.person_add, color: Colors.green),
-                        title: Text('Add Student'),
+                      const PopupMenuItem(
+                        value: 'add_student',
+                        child: ListTile(
+                          leading: Icon(Icons.person_add, color: Colors.green),
+                          title: Text('Add Student'),
+                        ),
                       ),
-                    ),
-                  ],
-                  icon: const Icon(Icons.more_vert), // Three dots menu
+                    ],
+                    icon: const Icon(Icons.more_vert), // Three dots menu
+                  ),
                 ),
-              ),
-            )
-            ;
-          }
+              )
+              ;
+            }
+        ),
       )
     );
   }
@@ -259,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // },
               onPressed: (){
                 Navigator.push(context,MaterialPageRoute(builder: (context)=>
-                ContentScreen(lectureTitle: titleController.text, lectureDescription: descriptionController.text)
+                CreateContentScreen(lectureTitle: titleController.text, lectureDescription: descriptionController.text)
                 ));
               },
               style: ButtonDecorations.primaryButtonStyle(context: context,borderRadius: 30),
