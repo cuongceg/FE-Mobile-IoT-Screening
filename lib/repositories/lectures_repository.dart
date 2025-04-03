@@ -56,6 +56,37 @@ class LectureRepository {
     }
   }
 
+  Future<bool> updateLectureContent({
+    required String id,
+    required String content,
+    required String accessToken,
+  }) async {
+    final url = updateLectureContentURL(id);
+
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'content': content,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true; // Successfully updated
+      } else {
+        // print("Failed to update lecture content: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      // print("Error updating lecture content: $e");
+      return false;
+    }
+  }
+
   Future<bool> deleteLecture({required String lectureId,required String accessToken}) async {
     final String url = deleteLectureURL(lectureId);
 
