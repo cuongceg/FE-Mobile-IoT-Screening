@@ -68,19 +68,59 @@ class AuthService{
         debugPrint("LOGIN SUCCESSFUL");
         await saveToken(userID,username, accessToken, accessTokenExpiry);
         return data;
+      }else if(response.statusCode == 401) {
+        throw Exception("Invalid username or password");
       }
-      debugPrint("LOGIN FAILED");
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body);
     } catch (e) {
-      debugPrint(e.toString().toUpperCase());
-      return null;
+      throw Exception("$e");
     }
     return null;
   }
 
   Future<void> logout() async {
     await deleteToken();
+  }
+
+  Future<void> forgotPassword(String username)async{
+    try{
+      final response = await http.post(Uri.parse(forgotPasswordURL),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "username": username,
+        })
+      );
+
+      if(response.statusCode == 200) {
+        return;
+      }else{
+        throw Exception("Failed to reset password ${response.body}");
+      }
+    }catch(e){
+      throw Exception("Failed to reset password $e");
+    }
+  }
+
+  Future<void>resetPassword({required String newPassword,required String resetToken})async{
+    try{
+      final response = await http.post(Uri.parse(resetPasswordURL),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "newPassword": newPassword,
+          "token": resetToken,
+        })
+      );
+
+      if(response.statusCode == 200) {
+        return;
+      }else{
+        debugPrint("Failed to reset password ${response.body}");
+        throw Exception("Failed to reset password ${response.body}");
+      }
+    }catch(e){
+      debugPrint("Failed to reset password $e");
+      throw Exception("Failed to reset password $e");
+    }
+
   }
 
   Future<List<Classes>?> getAllClasses()async{
@@ -92,10 +132,10 @@ class AuthService{
         final data = jsonDecode(response.body);
         return List<Classes>.from(data["data"].map((item) => Classes.fromJson(item)));
       }else{
-        throw Exception("Failed to get classes");
+        throw Exception("Failed to get classes ${response.body}");
       }
     }catch(e){
-      throw Exception("Failed to get classes");
+      throw Exception("Failed to get classes $e");
     }
   }
 }
