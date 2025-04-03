@@ -26,7 +26,6 @@ class LectureRepository {
   Future<bool> updateLecture({
     required String id,
     required String title,
-    required String content,
     required String description,
     required String accessToken,
   }) async {
@@ -41,7 +40,6 @@ class LectureRepository {
         },
         body: jsonEncode({
           'title': title,
-          'content': content,
           'description': description,
         }),
       );

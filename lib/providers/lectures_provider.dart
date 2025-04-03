@@ -42,14 +42,13 @@ class LectureProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateLecture(String id, String title, String content, String description) async {
+  Future<bool> updateLecture({required String id,required String title,required String description}) async {
     final accessToken = authProvider.accessToken;
     if (accessToken == null) return false;
 
     bool success = await repository.updateLecture(
       id: id,
       title: title,
-      content: content,
       description: description,
       accessToken: accessToken,
     );
@@ -57,11 +56,10 @@ class LectureProvider extends ChangeNotifier {
     if (success) {
       int index = _lectures.indexWhere((lecture) => lecture.id == id);
       if (index != -1) {
-        _lectures[index] = Lecture(
-            id: id, title: title, content: content, description: description,
-        created: _lectures[index].created, updated: DateTime.now(),
-        isPublicTo: _lectures[index].isPublicTo,
-        userId: _lectures[index].userId);
+        _lectures[index] = _lectures[index].copyWith(
+          title: title,
+          description: description,
+        );
         notifyListeners();
       }
     }
@@ -130,5 +128,9 @@ class LectureProvider extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  Lecture getLectureById(String id) {
+    return  _lectures.firstWhere((lecture) => lecture.id == id);
   }
 }
