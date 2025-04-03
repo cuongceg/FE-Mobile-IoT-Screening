@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.speech_to_text_iot_screen"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
