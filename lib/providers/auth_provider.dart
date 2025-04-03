@@ -29,7 +29,6 @@ class AuthProvider with ChangeNotifier {
         _userId = data["user_id"];
         _accessToken = data["token"]["access_token"];
       }
-      debugPrint("Access Token: $_accessToken");
       _state = 'initial';
     }catch(e){
       _state = 'error';
@@ -67,9 +66,9 @@ class AuthProvider with ChangeNotifier {
     _state = 'loading';
     notifyListeners();
     try{
-      // await _authService.forgotPassword(email);
+      await _authService.forgotPassword(email);
       // Simulate a network call
-      await Future.delayed(const Duration(seconds: 2));
+      // await Future.delayed(const Duration(seconds: 2));
       _state = 'initial';
     }catch(e){
       _state = 'error';

@@ -111,10 +111,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   return ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        // await authProvider.resetPassword(
-                        //   newPassword: newPasswordController.text,
-                        //   resetToken: resetTokenController.text,
-                        // );
+                        await authProvider.resetPassword(
+                          newPassword: newPasswordController.text,
+                          resetToken: resetTokenController.text,
+                        );
                         if(authProvider.state == 'error'){
                           ShowNotify.showSnackBar(context, authProvider.error!);
                         }else if(authProvider.state == 'initial'){
