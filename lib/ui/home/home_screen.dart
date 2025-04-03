@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text_iot_screen/core/decorations/button_decorations.dart';
 import 'package:speech_to_text_iot_screen/ui/home/class_selection_screen.dart';
+import 'package:speech_to_text_iot_screen/ui/home/content_screen.dart';
 
 import '../../model/lecture.dart';
 import '../../providers/auth_provider.dart';
@@ -100,7 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void showUpdateDialog(BuildContext context, Lecture lecture) {
     final TextEditingController titleController = TextEditingController(text: lecture.title);
-    final TextEditingController contentController = TextEditingController(text: lecture.content);
     final TextEditingController descriptionController = TextEditingController(text: lecture.description);
 
     showDialog(
@@ -108,22 +109,29 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text("Update Lecture"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: "Title"),
-              ),
-              TextField(
-                controller: contentController,
-                decoration: const InputDecoration(labelText: "Content"),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: "Description"),
-              ),
-            ],
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: "New title",
+                    prefixIcon: Icon(Icons.title),
+                )),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: null,
+                  minLines: 1,
+                  decoration: const InputDecoration(
+                    labelText: "New description",
+                    prefixIcon: Icon(Icons.description),
+                  )
+                )
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -133,15 +141,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: () async {
                 String newTitle = titleController.text.trim();
-                String newContent = contentController.text.trim();
                 String newDescription = descriptionController.text.trim();
 
-                if (newTitle.isNotEmpty && newContent.isNotEmpty && newDescription.isNotEmpty) {
+                if (newTitle.isNotEmpty && newDescription.isNotEmpty) {
                   bool updated = await context.read<LectureProvider>().updateLecture(
-                    lecture.id,
-                    newTitle,
-                    newContent,
-                    newDescription,
+                    id:lecture.id,
+                    title: newTitle,
+                    description: newDescription
                   );
 
                   if (updated) {
@@ -156,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 }
               },
+              style: ButtonDecorations.primaryButtonStyle(context: context,borderRadius: 30),
               child: const Text("Update"),
             ),
           ],
@@ -189,9 +196,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SnackBar(content: Text("Failed to delete lecture")),
                   );
                 }
-
                 Navigator.pop(context); // Close the dialog
               },
+              style: ButtonDecorations.primaryButtonStyle(context: context,borderRadius: 30),
               child: const Text("Delete"),
             ),
           ],
@@ -203,29 +210,27 @@ class _HomeScreenState extends State<HomeScreen> {
   void showCreateLectureDialog(BuildContext context) {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController descriptionController = TextEditingController();
-    final TextEditingController contentController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text("Create New Lecture"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: "Title"),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: "Description"),
-              ),
-              TextField(
-                controller: contentController,
-                decoration: const InputDecoration(labelText: "Content"),
-              ),
-            ],
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: "Title"),
+                ),
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(labelText: "Description"),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -233,26 +238,31 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: () async {
-                final lectureProvider = context.read<LectureProvider>();
-                bool created = await lectureProvider.createLecture(
-                  title: titleController.text,
-                  description: descriptionController.text,
-                  content: contentController.text,
-                );
-
-                if (created) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Lecture created successfully")),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Failed to create lecture")),
-                  );
-                }
-
-                Navigator.pop(context); // Close the dialog
+              // onPressed: () async {
+              //   final lectureProvider = context.read<LectureProvider>();
+              //   bool created = await lectureProvider.createLecture(
+              //     title: titleController.text,
+              //     description: descriptionController.text,
+              //   );
+              //
+              //   if (created) {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       const SnackBar(content: Text("Lecture created successfully")),
+              //     );
+              //   } else {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       const SnackBar(content: Text("Failed to create lecture")),
+              //     );
+              //   }
+              //
+              //   Navigator.pop(context); // Close the dialog
+              // },
+              onPressed: (){
+                Navigator.push(context,MaterialPageRoute(builder: (context)=>
+                ContentScreen(lectureTitle: titleController.text, lectureDescription: descriptionController.text)
+                ));
               },
+              style: ButtonDecorations.primaryButtonStyle(context: context,borderRadius: 30),
               child: const Text("Create"),
             ),
           ],
