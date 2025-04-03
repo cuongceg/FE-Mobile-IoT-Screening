@@ -35,4 +35,26 @@ class Lecture {
   static List<Lecture> listFromJson(List<dynamic> list) {
     return list.map((item) => Lecture.fromJson(item)).toList();
   }
+
+  Lecture copyWith({
+    String? id,
+    String? title,
+    String? content,
+    String? description,
+    String? userId,
+    List<String>? isPublicTo,
+    DateTime? created,
+    DateTime? updated,
+  }) {
+    return Lecture(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      description: description ?? this.description,
+      userId: userId ?? this.userId,
+      isPublicTo: isPublicTo ?? this.isPublicTo,
+      created: created ?? this.created,
+      updated: updated ?? this.updated,
+    );
+  }
 }
