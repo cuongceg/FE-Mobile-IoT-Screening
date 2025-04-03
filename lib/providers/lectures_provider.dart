@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../model/lecture.dart';
 import '../repositories/lectures_repository.dart';
 import 'auth_provider.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 class LectureProvider extends ChangeNotifier {
   final LectureRepository repository;
@@ -10,10 +13,14 @@ class LectureProvider extends ChangeNotifier {
   List<Lecture> _lectures = [];
   bool _isLoading = false;
   String? _errorMessage;
+  Lecture? _currentLecture;
+  quill.QuillController _controller = quill.QuillController.basic();
 
   List<Lecture> get lectures => _lectures;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  quill.QuillController get controller => _controller;
+  Lecture? get currentLecture => _currentLecture;
 
   LectureProvider({required this.repository, required this.authProvider});
 
@@ -59,6 +66,29 @@ class LectureProvider extends ChangeNotifier {
         _lectures[index] = _lectures[index].copyWith(
           title: title,
           description: description,
+        );
+        notifyListeners();
+      }
+    }
+
+    return success;
+  }
+
+  Future<bool> updateLectureContent({required String id,required String content}) async {
+    final accessToken = authProvider.accessToken;
+    if (accessToken == null) return false;
+
+    bool success = await repository.updateLectureContent(
+      id: id,
+      content: content,
+      accessToken: accessToken,
+    );
+
+    if (success) {
+      int index = _lectures.indexWhere((lecture) => lecture.id == id);
+      if (index != -1) {
+        _lectures[index] = _lectures[index].copyWith(
+          content: content,
         );
         notifyListeners();
       }
@@ -130,7 +160,14 @@ class LectureProvider extends ChangeNotifier {
     return false;
   }
 
-  Lecture getLectureById(String id) {
-    return  _lectures.firstWhere((lecture) => lecture.id == id);
+  void getLectureById(String id) {
+    final lecture = _lectures.firstWhere((lecture) => lecture.id == id);
+    _currentLecture = lecture;
+    _controller = quill.QuillController(
+      document: quill.Document.fromJson(jsonDecode(lecture.content)),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+    notifyListeners();
+    return ;
   }
 }
