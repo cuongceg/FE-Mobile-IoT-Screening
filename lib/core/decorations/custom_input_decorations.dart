@@ -10,7 +10,7 @@ class CustomInputDecorations{
       hintText: hintText,
       filled: true,
       fillColor: Colors.white,
-      hintStyle: Fonts().title.copyWith(color: colorScheme.onSecondary,fontSize: 16),
+      hintStyle: Fonts().body1.copyWith(color: colorScheme.onSecondary),
       prefixIcon: prefixIcon,
       border: OutlineInputBorder(
         borderSide: BorderSide(color: colorScheme.secondary),
