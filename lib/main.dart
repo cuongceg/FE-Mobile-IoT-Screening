@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_to_text_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/auth_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:speech_to_text_iot_screen/providers/classes_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/lectures_provider.dart';
 import 'package:speech_to_text_iot_screen/repositories/lectures_repository.dart';
 import 'package:speech_to_text_iot_screen/ui/authentication/login_screen.dart';
+import 'package:speech_to_text_iot_screen/ui/authentication/reset_password_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/home/home_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/home/record_screen.dart';
 
@@ -74,8 +77,14 @@ class _MyAppState extends State<MyApp> {
             '/home': (context) => const HomeScreen(),
             '/login': (context) => const LoginScreen(),
             '/record': (context) => const RecordScreen(),
-            // '/record': (context) => const (),
+            '/login/reset_password': (context) => const ResetPasswordScreen(),
           },
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            FlutterQuillLocalizations.delegate,
+          ],
         ),
     );
   }
