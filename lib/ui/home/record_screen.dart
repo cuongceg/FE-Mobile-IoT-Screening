@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:speech_to_text/speech_to_text_provider.dart';
+import 'package:speech_to_text_iot_screen/providers/custom_stt_provider.dart';
+import 'package:speech_to_text_iot_screen/services/web_socket_services.dart';
 import '../widget/recognition_result.dart';
 
 class RecordScreen extends StatefulWidget {
-  const RecordScreen({super.key});
+  final String title,description;
+  const RecordScreen({super.key,required this.description,required this.title});
 
   @override
   RecordScreenState createState() =>
@@ -12,17 +14,31 @@ class RecordScreen extends StatefulWidget {
 }
 
 class RecordScreenState extends State<RecordScreen> {
+  late WebSocketServices _webSocketServices ;
   String _currentLocaleId = '';
 
-  void _setCurrentLocale(SpeechToTextProvider speechProvider) {
+  void _setCurrentLocale(CustomSttProvider speechProvider) {
     if (speechProvider.isAvailable && _currentLocaleId.isEmpty) {
       _currentLocaleId = speechProvider.systemLocale?.localeId ?? '';
     }
   }
+  @override
+  void initState() {
+    super.initState();
+    _webSocketServices = WebSocketServices(userId: "t1",
+        title: widget.title,
+        description: widget.description,);
+  }
+
+  @override
+  void dispose() {
+    _webSocketServices.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    var speechProvider = Provider.of<SpeechToTextProvider>(context);
+    var speechProvider = Provider.of<CustomSttProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Record Screen'),
@@ -36,7 +52,7 @@ class RecordScreenState extends State<RecordScreen> {
     );
   }
 
-  Widget _buildBody(BuildContext context,SpeechToTextProvider speechProvider) {
+  Widget _buildBody(BuildContext context,CustomSttProvider speechProvider) {
     _setCurrentLocale(speechProvider);
     return Column(children: [
       Column(
@@ -48,13 +64,17 @@ class RecordScreenState extends State<RecordScreen> {
                 onPressed:
                 !speechProvider.isAvailable || speechProvider.isListening
                     ? null
-                    : () => speechProvider.listen(
-                    partialResults: true, localeId: _currentLocaleId),
+                    : () {
+                  speechProvider.listen(
+                      partialResults: true, localeId: _currentLocaleId,webSocketServices: _webSocketServices);
+                },
                 child: const Text('Start'),
               ),
               TextButton(
                 onPressed: speechProvider.isListening
-                    ? () => speechProvider.stop()
+                    ? () =>{
+                      speechProvider.stop()
+                }
                     : null,
                 child: const Text('Stop'),
               ),

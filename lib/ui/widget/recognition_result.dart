@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:speech_to_text/speech_to_text_provider.dart';
+import 'package:speech_to_text_iot_screen/providers/custom_stt_provider.dart';
 
 /// Show the most recently recognized speech results and use the level
 /// information to animate the microphone.
@@ -13,7 +12,7 @@ class RecognitionResultsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var speechProvider = Provider.of<SpeechToTextProvider>(context);
+    var speechProvider = Provider.of<CustomSttProvider>(context);
     return Column(
       children: <Widget>[
         const Center(
@@ -47,7 +46,7 @@ class RecognitionResultsWidget extends StatelessWidget {
                         BoxShadow(
                             blurRadius: .26,
                             spreadRadius: speechProvider.lastLevel * 1.5,
-                            color: Colors.black.withOpacity(.05))
+                            color: Colors.black54)
                       ],
                       color: Colors.white,
                       borderRadius: const BorderRadius.all(Radius.circular(50)),
