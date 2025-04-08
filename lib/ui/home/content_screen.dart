@@ -73,7 +73,26 @@ class _ContentScreenState extends State<ContentScreen> {
                 children: [
                   quill.QuillSimpleToolbar(
                       controller: lectureProvider.controller,
-                      config: const quill.QuillSimpleToolbarConfig()
+                      config: const quill.QuillSimpleToolbarConfig(
+                          showAlignmentButtons: true,
+                          showBackgroundColorButton: false,
+                          showCodeBlock: false,
+                          showDividers: false,
+                          showFontFamily: false,
+                          showFontSize: false,
+                          showHeaderStyle: false,
+                          showListBullets: false,
+                          showListCheck: false,
+                          showListNumbers: false,
+                          showInlineCode: false,
+                          showQuote: false,
+                          showSearchButton: false,
+                          showSubscript: false,
+                          showSuperscript: false,
+                          showColorButton: false,
+                          showLink: false,
+                          showStrikeThrough: false,
+                      )
                   ),
                   Divider(
                     color: Colors.grey.shade300,
