@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text_iot_screen/core/ultis/show_notify.dart';
 import 'package:speech_to_text_iot_screen/providers/classes_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/lectures_provider.dart';
 
@@ -33,12 +34,12 @@ class _ClassSelectionScreenState extends State<ClassSelectionScreen> {
           IconButton(
             icon: const Icon(Icons.check),
             onPressed: ()async{
-              Navigator.pop(context);
               final success =  await lectureProvider.addStudentToLecture(lectureId: widget.lectureId, studentIds: classesProvider.selectedStudents.toList());
               if(success){
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Students added to lecture success")));
+                ShowNotify.showSnackBar(context,"Students added to lecture success");
+                Navigator.pop(context);
               }else{
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to add students to lecture")));
+                ShowNotify.showSnackBar(context, "Failed to add students to lecture");
               }
             },
           ),
