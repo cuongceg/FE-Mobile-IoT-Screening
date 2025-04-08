@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text_iot_screen/core/component/loading_animation.dart';
 import 'package:speech_to_text_iot_screen/core/decorations/button_decorations.dart';
+import 'package:speech_to_text_iot_screen/core/ultis/show_notify.dart';
 import 'package:speech_to_text_iot_screen/ui/home/class_selection_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/home/content_screen.dart';
-import 'package:speech_to_text_iot_screen/ui/home/create_content_screen.dart';
+import 'package:speech_to_text_iot_screen/ui/home/record_screen.dart';
 
 import '../../model/lecture.dart';
 import '../../providers/auth_provider.dart';
@@ -29,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Provider.of<AuthProvider>(context, listen: false).logout();
             },
-          )
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -44,7 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
         onRefresh: () async {
           await lectureProvider.fetchLectures();
         },
-        child: ListView.builder(
+        child: lectureProvider.isLoading
+        ?Center(child: LoadingAnimation().circleLoadingAnimation(context),)
+        :ListView.builder(
             itemCount: lectureProvider.lectures.length,
             itemBuilder: (context, index) {
               final lecture = lectureProvider.lectures[index];
@@ -72,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         showDeleteConfirmationDialog(context, lecture.id);
                       } else if (value == 'add_student') {
                         Navigator.push(context,MaterialPageRoute(builder: (context)=>
-                        ClassSelectionScreen(lectureId: lecture.id, currentIsPublicTo: lecture.isPublicTo)));
+                            ClassSelectionScreen(lectureId: lecture.id, currentIsPublicTo: lecture.isPublicTo)));
                       }
                     },
                     itemBuilder: (context) => [
@@ -247,29 +251,15 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              // onPressed: () async {
-              //   final lectureProvider = context.read<LectureProvider>();
-              //   bool created = await lectureProvider.createLecture(
-              //     title: titleController.text,
-              //     description: descriptionController.text,
-              //   );
-              //
-              //   if (created) {
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       const SnackBar(content: Text("Lecture created successfully")),
-              //     );
-              //   } else {
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       const SnackBar(content: Text("Failed to create lecture")),
-              //     );
-              //   }
-              //
-              //   Navigator.pop(context); // Close the dialog
-              // },
               onPressed: (){
-                Navigator.push(context,MaterialPageRoute(builder: (context)=>
-                CreateContentScreen(lectureTitle: titleController.text, lectureDescription: descriptionController.text)
-                ));
+                if(titleController.text.isNotEmpty){
+                  Navigator.pop(context);
+                  Navigator.push(context,MaterialPageRoute(builder: (context)=>
+                      RecordScreen(title: titleController.text, description: descriptionController.text)
+                  ));
+                }else{
+                  ShowNotify.showSnackBar(context, "Can't create lecture without title");
+                }
               },
               style: ButtonDecorations.primaryButtonStyle(context: context,borderRadius: 30),
               child: const Text("Create"),
