@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text_iot_screen/core/ultis/show_notify.dart';
 import 'package:speech_to_text_iot_screen/providers/custom_stt_provider.dart';
 import 'package:speech_to_text_iot_screen/services/web_socket_services.dart';
 import '../widget/recognition_result.dart';
@@ -42,6 +43,15 @@ class RecordScreenState extends State<RecordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Record Screen'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.done),
+            onPressed: () {
+              Navigator.pop(context);
+              ShowNotify.showSnackBar(context, "Lecture created successfully");
+            },
+          ),
+        ],
       ),
       body: (speechProvider.isNotAvailable)?
       const Center(
