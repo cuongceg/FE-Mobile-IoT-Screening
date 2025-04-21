@@ -41,7 +41,7 @@ class _ContentScreenState extends State<ContentScreen> {
           Consumer<LectureProvider>(
             builder: (context,lectureProvider,child){
               return IconButton(
-                icon: const Icon(Icons.save),
+                icon: const Icon(Icons.done),
                 onPressed: () async {
                   final content = jsonEncode(lectureProvider.controller.document.toDelta().toJson());
 
