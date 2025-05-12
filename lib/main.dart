@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
@@ -8,13 +9,15 @@ import 'package:speech_to_text_iot_screen/providers/classes_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/custom_stt_provider.dart';
 import 'package:speech_to_text_iot_screen/providers/lectures_provider.dart';
 import 'package:speech_to_text_iot_screen/repositories/lectures_repository.dart';
+import 'package:speech_to_text_iot_screen/services/notification_service.dart';
 import 'package:speech_to_text_iot_screen/ui/authentication/login_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/authentication/reset_password_screen.dart';
 import 'package:speech_to_text_iot_screen/ui/home/home_screen.dart';
 
 void main()async{
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp();
+  await NotificationService().init();
   final authProvider = AuthProvider();
   await authProvider.loadUser();
   runApp(MyApp(authProvider: authProvider,));
