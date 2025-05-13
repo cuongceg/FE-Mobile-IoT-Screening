@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -12,9 +14,18 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    await _requestNotificationPermission();
+    await _requestNotificationPermission(_localNotificationsPlugin);
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettings = InitializationSettings(android: androidSettings);
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+      requestSoundPermission: false,
+      requestBadgePermission: false,
+      requestAlertPermission: false,
+    );
+    const initializationSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: initializationSettingsDarwin,);
+    
 
     await _localNotificationsPlugin.initialize(
       initializationSettings,
@@ -81,8 +92,9 @@ class NotificationService {
     debugPrint('🚀 Mở từ background - Sender: $senderId, Lesson: $lessonId');
   }
 
-  Future<void> _requestNotificationPermission() async {
-    final status = await Permission.notification.status;
+  Future<void> _requestNotificationPermission(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+    if(Platform.isAndroid){
+      final status = await Permission.notification.status;
 
     if (status.isDenied || status.isPermanentlyDenied) {
       final result = await Permission.notification.request();
@@ -94,6 +106,17 @@ class NotificationService {
       }
     } else {
       debugPrint('🔔 Quyền thông báo đã sẵn sàng');
+    }
+    }else if(Platform.isIOS){
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+            critical: true,
+          );
     }
   }
 }
