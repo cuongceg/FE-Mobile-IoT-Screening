@@ -4,6 +4,16 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app requires access to speech recognition services.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires access to the microphone.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app requires access to Bluetooth devices.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>This app requires access to notifications.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+    <string>Exchange data with nearby devices running the Yourapp.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Speech To Text Iot Screen</string>
 	<key>CFBundleExecutable</key>
