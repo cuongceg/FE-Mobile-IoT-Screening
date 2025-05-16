@@ -1,10 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:speech_to_text_iot_screen/core/ultis/show_notify.dart';
+import 'package:speech_to_text_iot_screen/services/auth_service.dart';
 import '../core/ultis/badge_util.dart';
+import '../network/api_urls.dart';
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -25,7 +30,17 @@ class NotificationService {
     const initializationSettings = InitializationSettings(
       android: androidSettings,
       iOS: initializationSettingsDarwin,);
-    
+
+    await _localNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'fcm_channel', // same ID as used below
+        'FCM Notifications',
+        description: 'Kênh cho thông báo FCM với action buttons',
+        importance: Importance.max,
+      ),
+    );
 
     await _localNotificationsPlugin.initialize(
       initializationSettings,
@@ -46,23 +61,36 @@ class NotificationService {
     final data = message.data;
 
     await BadgeUtil.incrementBadge();
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'fcm_channel',
+        'FCM Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        actions: <AndroidNotificationAction>[
+          AndroidNotificationAction(
+            'ACCEPT_ACTION',
+            'Đồng ý',
+            showsUserInterface: true,
+            cancelNotification: true,
+          ),
+          AndroidNotificationAction(
+            'DECLINE_ACTION',
+            'Từ chối',
+            showsUserInterface: true,
+            cancelNotification: true,
+          ),
+        ],
+      ),
+    );
 
     _localNotificationsPlugin.show(
       0,
       title,
       body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'fcm_channel',
-          'FCM Notifications',
-          importance: Importance.max,
-          priority: Priority.high,
-          actions: [
-            AndroidNotificationAction('ACCEPT_ACTION', 'Đồng ý'),
-            AndroidNotificationAction('DECLINE_ACTION', 'Từ chối'),
-          ],
-        ),
-      ),
+      notificationDetails,
       payload: '${data['senderId']}|${data['lessonId']}',
     );
   }
@@ -76,6 +104,7 @@ class NotificationService {
 
     if (actionId == 'ACCEPT_ACTION') {
       debugPrint('✅ Đồng ý từ $senderId với bài $lessonId');
+      _addStudentToLecture(lessonId: lessonId, studentId: senderId);
       // Xử lý truy cập bài giảng
     } else if (actionId == 'DECLINE_ACTION') {
       debugPrint('❌ Từ chối từ $senderId với bài $lessonId');
@@ -117,6 +146,37 @@ class NotificationService {
             sound: true,
             critical: true,
           );
+    }
+  }
+
+  void _addStudentToLecture({required String lessonId,required String studentId})async{
+    try{
+      String? accessToken = await AuthService().getAccessToken();
+      if(accessToken == null){
+        debugPrint("🚫 No access token");
+        return;
+      }
+      List<String> studentIds = [studentId];
+      final response = await http.put(
+        Uri.parse(addStudentToLectureURL(lessonId)),
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "studentIds":studentIds
+        }),
+      );
+
+      if(response.statusCode == 200) {
+        ShowNotify.showToastBar("Thêm sinh viên vào bài giảng thành công");
+        debugPrint("✅ Thêm sinh viên vào bài giảng thành công");
+      }else{
+        ShowNotify.showToastBar("Thêm sinh viên vào bài giảng thất bại");
+        debugPrint("❌ Thêm sinh viên vào bài giảng thất bại");
+      }
+    }catch(e){
+      debugPrint(e.toString());
     }
   }
 }
