@@ -103,14 +103,11 @@ class NotificationService {
     final lessonId = parts.length > 1 ? parts[1] : '';
 
     if (actionId == 'ACCEPT_ACTION') {
-      debugPrint('✅ Đồng ý từ $senderId với bài $lessonId');
       _addStudentToLecture(lessonId: lessonId, studentId: senderId);
-      // Xử lý truy cập bài giảng
     } else if (actionId == 'DECLINE_ACTION') {
-      debugPrint('❌ Từ chối từ $senderId với bài $lessonId');
-      // Xử lý từ chối
+      ShowNotify.showToastBar('Từ chối người dùng thành công');
     } else {
-      debugPrint('👆 Nhấn thông báo không action');
+      ShowNotify.showToastBar('Nhấn thông báo không action');
     }
   }
 
@@ -156,15 +153,14 @@ class NotificationService {
         debugPrint("🚫 No access token");
         return;
       }
-      List<String> studentIds = [studentId];
       final response = await http.put(
-        Uri.parse(addStudentToLectureURL(lessonId)),
+        Uri.parse(acceptStudentToLectureURL(lessonId)),
         headers: {
           "Authorization": "Bearer $accessToken",
           "Content-Type": "application/json",
         },
         body: jsonEncode({
-          "studentIds":studentIds
+          "studentId":studentId
         }),
       );
 
@@ -173,7 +169,8 @@ class NotificationService {
         debugPrint("✅ Thêm sinh viên vào bài giảng thành công");
       }else{
         ShowNotify.showToastBar("Thêm sinh viên vào bài giảng thất bại");
-        debugPrint("❌ Thêm sinh viên vào bài giảng thất bại");
+        debugPrint(response.statusCode.toString());
+        debugPrint(response.body);
       }
     }catch(e){
       debugPrint(e.toString());
