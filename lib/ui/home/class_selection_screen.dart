@@ -74,16 +74,16 @@ class _ClassSelectionScreenState extends State<ClassSelectionScreen> {
                           child: Row(
                             children: [
                               Checkbox(
-                                value: classesProvider.selectedStudents.contains(student),
+                                value: classesProvider.selectedStudents.contains(student.id),
                                 onChanged: (value) {
                                   if(value!){
-                                    classesProvider.addStudentToSelected(student);
+                                    classesProvider.addStudentToSelected(student.id);
                                   }else{
-                                    classesProvider.removeStudentFromSelected(student);
+                                    classesProvider.removeStudentFromSelected(student.id);
                                   }
                                 },
                               ),
-                              Text(student),
+                              Text("${student.name} (${student.id})"),
                             ],
                           )),
                   ).toList(),
