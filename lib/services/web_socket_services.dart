@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:speech_to_text_iot_screen/network/api_urls.dart';
+import 'package:speech_to_text_iot_screen/services/auth_service.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -7,15 +8,13 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class WebSocketServices {
   late WebSocketChannel _channel;
   WebSocketServices({
-    String? userId,
     String? title,
     String description = '',
     List<String> isPublicTo = const [],
   }) {
-    if(userId != null && title != null){
+    if(title != null){
       _connect();
       _sendInitLecture(
-        userId: userId,
         title: title,
         description: description,
         isPublicTo: isPublicTo,
@@ -44,22 +43,29 @@ class WebSocketServices {
   }
 
   void _sendInitLecture({
-    required String userId,
     required String title,
     String description = '',
     List<String> isPublicTo = const [],
-  }) {
-    final initMessage = {
-      "type": "init",
-      "userId": userId,
-      "meta": {
-        "title": title,
-        "description": description,
-        "isPublicTo": isPublicTo
+  }) async {
+    try {
+      String? userId = await AuthService().getUserID();
+      if (userId == null) {
+        throw Exception("User ID is required to initialize the lecture.");
       }
-    };
+      final initMessage = {
+        "type": "init",
+        "userId": userId,
+        "meta": {
+          "title": title,
+          "description": description,
+          "isPublicTo": isPublicTo
+        }
+      };
 
-    _channel.sink.add(jsonEncode(initMessage));
+      _channel.sink.add(jsonEncode(initMessage));
+    } catch (e) {
+      print("Error sending init lecture: $e");
+    }
   }
 
 
