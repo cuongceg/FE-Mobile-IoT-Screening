@@ -26,7 +26,7 @@ class RecordScreenState extends State<RecordScreen> {
   @override
   void initState() {
     super.initState();
-    _webSocketServices = WebSocketServices(userId: "t1",
+    _webSocketServices = WebSocketServices(
         title: widget.title,
         description: widget.description,);
   }
@@ -40,25 +40,38 @@ class RecordScreenState extends State<RecordScreen> {
   @override
   Widget build(BuildContext context) {
     var speechProvider = Provider.of<CustomSttProvider>(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Record Screen'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.done),
-            onPressed: () {
-              Navigator.pop(context);
-              ShowNotify.showSnackBar(context, "Lecture created successfully");
-            },
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result)async{
+        if(didPop){
+          return;
+        }
+
+        bool shouldClose = await _showCloseConfirmationDialog(context);
+        if (shouldClose) {
+          Navigator.pop(context);
+        }
+      } ,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Record Screen'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.done),
+              onPressed: () {
+                Navigator.pop(context);
+                ShowNotify.showSnackBar(context, "Lecture created successfully");
+              },
+            ),
+          ],
+        ),
+        body: (speechProvider.isNotAvailable)?
+        const Center(
+          child: Text(
+              'Speech recognition not available, no permission or not available on the device.'),
+        ):
+        _buildBody(context, speechProvider),
       ),
-      body: (speechProvider.isNotAvailable)?
-      const Center(
-        child: Text(
-            'Speech recognition not available, no permission or not available on the device.'),
-      ):
-      _buildBody(context, speechProvider),
     );
   }
 
@@ -161,4 +174,28 @@ class RecordScreenState extends State<RecordScreen> {
     });
     debugPrint(selectedVal);
   }
+
+  Future<bool> _showCloseConfirmationDialog(BuildContext context) async {
+  return await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Confirm Exit'),
+            content: const Text('Are you sure you want to close the screen?\n'
+                'All unsaved changes will be lost.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
+          );
+        },
+      ) ??
+      false; // Return false if dialog is dismissed without selection
+}
 }
