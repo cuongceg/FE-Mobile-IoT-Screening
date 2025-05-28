@@ -32,11 +32,12 @@ class ClassesProvider extends ChangeNotifier{
     if(_selectedClasses[classId]!) {
       _selectedStudents.addAll(_classes
           .firstWhere((element) => element.id == classId)
-          .students.toSet());
+          .students.map((student) => student.id).toSet());
     }else{
       _selectedStudents.removeWhere((element) => _classes
           .firstWhere((element) => element.id == classId)
-          .students.contains(element));
+          .students.map((student) => student.id)
+          .contains(element));
     }
     notifyListeners();
   }
@@ -45,7 +46,7 @@ class ClassesProvider extends ChangeNotifier{
     _selectedStudents.add(student);
     for (var cl in _classes) {
       bool allStudentsSelected = cl.students.isNotEmpty &&
-          cl.students.every((s) => _selectedStudents.contains(s));
+          cl.students.every((s) => _selectedStudents.contains(s.id));
       _selectedClasses[cl.id] = allStudentsSelected;
     }
     notifyListeners();
@@ -57,7 +58,7 @@ class ClassesProvider extends ChangeNotifier{
     _selectedClasses.clear();
     for (var cl in _classes) {
       bool allStudentsSelected = cl.students.isNotEmpty &&
-          cl.students.every((s) => _selectedStudents.contains(s));
+          cl.students.every((s) => _selectedStudents.contains(s.id));
       _selectedClasses[cl.id] = allStudentsSelected;
     }
     notifyListeners();
@@ -67,7 +68,7 @@ class ClassesProvider extends ChangeNotifier{
     _selectedStudents.remove(student);
     for (var cl in _classes) {
       bool allStudentsSelected = cl.students.isNotEmpty &&
-          cl.students.every((s) => _selectedStudents.contains(s));
+          cl.students.every((s) => _selectedStudents.contains(s.id));
       _selectedClasses[cl.id] = allStudentsSelected;
     }
     notifyListeners();
