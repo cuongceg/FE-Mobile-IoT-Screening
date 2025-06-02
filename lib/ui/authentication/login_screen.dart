@@ -137,7 +137,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       if(authProvider.state == 'error'){
                         ShowNotify.showSnackBar(context, authProvider.error!);
                       }else if(authProvider.state == 'initial'){
-                        Navigator.pushNamed(context, '/login/reset_password');
+                        Navigator.pop(context);
+                        ShowNotify.showToastBar("Your reset link has been sent to your email");
                       }
                     },
                     style: ButtonDecorations.primaryButtonStyle(context: context),
