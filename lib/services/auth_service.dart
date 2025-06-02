@@ -87,6 +87,7 @@ class AuthService{
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           "username": username,
+          "isMobile": "true"
         })
       );
 
